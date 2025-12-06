@@ -1,16 +1,5 @@
-// Manual type definitions to replace missing vite/client types and fix build error
+// Type definitions
+// Removed reference to 'vite/client' to fix "Cannot find type definition file" error.
+// Removed 'process' declaration to fix "Cannot redeclare block-scoped variable" error.
 
-declare var process: {
-  env: {
-    NODE_ENV: string;
-    [key: string]: string | undefined;
-  };
-};
-
-interface ImportMetaEnv {
-  [key: string]: any;
-}
-
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
-}
+export {};

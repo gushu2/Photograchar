@@ -9,33 +9,51 @@
  */
 
 /**
+ * Generates a simple hash from a string to create deterministic "random" results.
+ * This ensures the same photo always produces the same match result.
+ */
+const simpleHash = (str: string): number => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return Math.abs(hash);
+};
+
+/**
  * Compares a user's selfie with a candidate image locally.
  * Returns a simulated match result.
  */
 export const compareFaces = async (selfieBase64: string, candidateBase64: string): Promise<{ match: boolean; confidence: number }> => {
   
-  // 1. Simulate Network/Processing Delay (0.5s to 1.5s)
-  // This makes the scanning bar in the UI look realistic.
-  const delay = 500 + Math.random() * 1000;
+  // 1. Simulate Network/Processing Delay (300ms to 800ms) for realism
+  const delay = 300 + Math.random() * 500;
   await new Promise(resolve => setTimeout(resolve, delay));
 
   try {
-    // 2. Mock Matching Logic
-    // In a real local implementation, we would use a library like face-api.js here.
-    // For this template to work out-of-the-box without heavy model downloads:
+    // 2. Deterministic Matching Logic
+    // We combine the selfie and candidate strings to create a unique pair hash.
+    // This simulates the AI looking at "Features".
     
-    // We generate a result based on the length of the base64 string.
-    // This ensures that the result is deterministic (same photo always gives same result)
-    // but feels random enough for testing multiple photos.
-    const magicNumber = candidateBase64.length % 100;
+    // We take a slice of the strings to avoid heavy computation on massive Base64 strings
+    const selfieFeature = selfieBase64.substring(selfieBase64.length - 500);
+    const candidateFeature = candidateBase64.substring(candidateBase64.length - 500);
+    
+    const combinedHash = simpleHash(selfieFeature + candidateFeature);
+    
+    // Normalize hash to 0-100
+    const matchScore = combinedHash % 100;
 
-    // Simulate a 30% match rate so the user can see both "Match" and "No Match" UI states.
-    const isMatch = magicNumber > 70; 
+    // We set a threshold. In this simulation, roughly 20% of photos will match.
+    // Adjust '80' to make matches more or less frequent.
+    const isMatch = matchScore > 80; 
 
-    // Calculate a fake confidence score
+    // Calculate a confidence score
     const confidence = isMatch 
-      ? 85 + (Math.random() * 14) // High confidence for matches (85-99%)
-      : 10 + (Math.random() * 40); // Low confidence for non-matches
+      ? 85 + (matchScore % 15) // 85-99%
+      : 10 + (matchScore % 60); // 10-70%
 
     return {
       match: isMatch,
