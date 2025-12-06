@@ -3,6 +3,10 @@ import { Icons } from '../constants';
 import { UserRole } from '../types';
 import * as storage from '../services/storageService';
 
+// Placeholder for the Background Image
+// You can replace this URL with the specific image you uploaded
+const DEITY_BG = "https://images.unsplash.com/photo-1605218427360-36390a85a49f?q=80&w=2070&auto=format&fit=crop";
+
 interface HeroProps {
   onSelectRole: (role: UserRole) => void;
 }
@@ -67,69 +71,106 @@ const Hero: React.FC<HeroProps> = ({ onSelectRole }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-4 space-y-8 animate-fade-in relative">
-      <div className="p-4 rounded-full mb-4">
-        {/* Updated Hero Logo */}
-        <Icons.Lens className="w-24 h-24 text-white drop-shadow-[0_0_15px_rgba(79,70,229,0.5)]" />
-      </div>
+    <div className="relative flex flex-col items-center justify-center min-h-[calc(100vh-64px)] overflow-hidden">
       
-      <div className="space-y-4 max-w-2xl">
-        <h1 className="text-4xl md:text-6xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-400">
-          Find Your Moments
-        </h1>
-        <p className="text-lg md:text-xl text-gray-400">
-          Use advanced AI to instantly find photos of yourself from events, weddings, and parties.
-          No more scrolling through thousands of images.
-        </p>
+      {/* --- Background Layer --- */}
+      <div className="absolute inset-0 z-0">
+        {/* The Image */}
+        <img 
+          src={DEITY_BG} 
+          alt="Background" 
+          className="w-full h-full object-cover opacity-60 mix-blend-overlay transition-opacity duration-700 grayscale-[20%]" 
+        />
+        {/* Gradient Mix - The Requested Fancy Red/Black/Yellow/Orange Mix */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-red-950/80 to-transparent mix-blend-multiply" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black" />
+        
+        {/* Fancy Conic Gradient Overlay */}
+        <div className="absolute inset-0 opacity-40 bg-[conic-gradient(at_top_right,_var(--tw-gradient-stops))] from-red-900 via-transparent to-orange-900 mix-blend-color-dodge pointer-events-none"></div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 w-full max-w-md pt-8">
-        <button
-          onClick={handleUserClick}
-          className="group relative flex items-center justify-center gap-3 px-8 py-4 bg-white text-black rounded-xl font-semibold hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1"
-        >
-          <Icons.Camera className="w-5 h-5 group-hover:scale-110 transition-transform" />
-          <span>Find My Photos</span>
-        </button>
+      {/* --- Main Content Card (Glassmorphism) --- */}
+      <div className="relative z-10 w-full max-w-3xl mx-4 animate-fade-in">
+        <div className="backdrop-blur-xl bg-black/40 border border-red-500/20 rounded-[2rem] p-8 md:p-12 shadow-[0_0_50px_rgba(220,38,38,0.2)] flex flex-col items-center text-center space-y-8 relative overflow-hidden">
+          
+          {/* Subtle Glow behind Content */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-gradient-to-b from-red-500/10 to-transparent rounded-[2rem] pointer-events-none"></div>
 
-        <button
-          onClick={handlePhotographerClick}
-          className="group relative flex items-center justify-center gap-3 px-8 py-4 bg-gray-800 text-white rounded-xl font-semibold border border-gray-700 hover:bg-gray-700 hover:border-gray-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1"
-        >
-          <Icons.Upload className="w-5 h-5 group-hover:scale-110 transition-transform" />
-          <span>I'm a Photographer</span>
-        </button>
+          {/* Logo with Fire Float Animation */}
+          <div className="relative group">
+            <div className="absolute inset-0 bg-orange-500 rounded-full blur-2xl opacity-20 group-hover:opacity-50 transition-opacity duration-500 animate-pulse"></div>
+            <div className="relative p-2 rounded-full transform transition-transform duration-500 hover:scale-110">
+               <Icons.Lens className="w-28 h-28 drop-shadow-[0_4px_20px_rgba(234,88,12,0.6)]" />
+            </div>
+          </div>
+          
+          <div className="space-y-4 relative z-10">
+            <h1 className="text-4xl md:text-7xl font-bold tracking-tight drop-shadow-sm">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-yellow-200 via-orange-400 to-red-500 filter drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
+                PHOTOGRACHAR
+              </span>
+            </h1>
+            <p className="text-lg md:text-xl text-orange-100/80 max-w-lg mx-auto leading-relaxed">
+              Experience the magic of AI. Instantly find your moments from the event in seconds.
+            </p>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col md:flex-row gap-4 w-full max-w-md pt-4 relative z-10">
+            <button
+              onClick={handleUserClick}
+              className="flex-1 group relative flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-2xl font-bold text-lg hover:from-orange-500 hover:to-red-500 transition-all duration-300 shadow-[0_0_20px_rgba(234,88,12,0.4)] hover:shadow-[0_0_30px_rgba(234,88,12,0.6)] hover:-translate-y-1 overflow-hidden border border-orange-400/30"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+              <Icons.Camera className="w-6 h-6 group-hover:rotate-12 transition-transform" />
+              <span>Find My Photos</span>
+            </button>
+
+            <button
+              onClick={handlePhotographerClick}
+              className="flex-1 group relative flex items-center justify-center gap-3 px-8 py-4 bg-black/60 text-white rounded-2xl font-bold text-lg border border-red-500/30 hover:bg-black/80 hover:border-red-500/50 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 backdrop-blur-sm"
+            >
+              <Icons.Upload className="w-6 h-6 group-hover:-translate-y-1 transition-transform text-red-400" />
+              <span>Photographer</span>
+            </button>
+          </div>
+
+          {/* Trust Badges */}
+          <div className="pt-8 flex flex-wrap justify-center gap-6 text-gray-400 text-sm font-medium relative z-10">
+            <div className="flex items-center gap-2 bg-black/40 px-3 py-1 rounded-full border border-red-500/20">
+              <Icons.Check className="w-4 h-4 text-green-400" />
+              <span className="text-gray-300">Secure & Private</span>
+            </div>
+            <div className="flex items-center gap-2 bg-black/40 px-3 py-1 rounded-full border border-red-500/20">
+              <Icons.Check className="w-4 h-4 text-orange-400" />
+              <span className="text-gray-300">AI Face Match</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="pt-12 flex gap-8 text-gray-500 text-sm">
-        <div className="flex items-center gap-2">
-          <Icons.Check className="w-4 h-4 text-green-500" />
-          <span>Privacy Focused</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Icons.Check className="w-4 h-4 text-green-500" />
-          <span>Instant Matching</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Icons.Check className="w-4 h-4 text-green-500" />
-          <span>AI Powered</span>
-        </div>
-      </div>
+      {/* --- Modals (Styled) --- */}
 
       {/* Photographer Login Modal */}
       {showLoginModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-2xl shadow-2xl p-6 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-[#0f0505] border border-red-900/50 w-full max-w-sm rounded-3xl shadow-[0_0_40px_rgba(220,38,38,0.15)] p-8 relative overflow-hidden">
+             {/* Decorative glow */}
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-red-600/20 rounded-full blur-3xl pointer-events-none"></div>
+            
             <button 
               onClick={() => setShowLoginModal(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+              className="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
             
-            <div className="mb-6 text-left">
-              <h2 className="text-xl font-bold text-white mb-2">Photographer Access</h2>
-              <p className="text-sm text-gray-400">Please enter the access code to manage the gallery.</p>
+            <div className="mb-8">
+              <div className="w-12 h-12 bg-red-950/50 border border-red-900 rounded-2xl flex items-center justify-center mb-4 text-orange-500">
+                <Icons.Upload className="w-6 h-6" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">Photographer</h2>
+              <p className="text-sm text-gray-400">Enter your secure passcode.</p>
             </div>
 
             <form onSubmit={handleLoginSubmit} className="space-y-4">
@@ -138,13 +179,13 @@ const Hero: React.FC<HeroProps> = ({ onSelectRole }) => {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                  placeholder="Enter passcode"
+                  className="w-full bg-black/50 border border-red-900/50 rounded-xl px-5 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500 transition-all text-lg tracking-widest"
+                  placeholder="••••"
                   autoFocus
                 />
                 {loginError && (
-                  <p className="text-red-400 text-xs mt-2 flex items-center gap-1">
-                    <Icons.Loader className="w-3 h-3" />
+                  <p className="text-red-400 text-sm mt-3 flex items-center gap-2 bg-red-950/50 border border-red-900/50 p-2 rounded-lg">
+                    <Icons.Loader className="w-4 h-4" />
                     {loginError}
                   </p>
                 )}
@@ -152,7 +193,7 @@ const Hero: React.FC<HeroProps> = ({ onSelectRole }) => {
               
               <button
                 type="submit"
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg transition-colors shadow-lg shadow-indigo-500/20"
+                className="w-full bg-gradient-to-r from-red-700 to-orange-700 hover:from-red-600 hover:to-orange-600 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-red-900/20 mt-2"
               >
                 Access Dashboard
               </button>
@@ -163,56 +204,64 @@ const Hero: React.FC<HeroProps> = ({ onSelectRole }) => {
 
       {/* User Details Modal */}
       {showUserModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-2xl shadow-2xl p-6 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-[#0f0505] border border-orange-900/50 w-full max-w-sm rounded-3xl shadow-[0_0_40px_rgba(234,88,12,0.15)] p-8 relative overflow-hidden">
+             {/* Decorative glow */}
+            <div className="absolute -top-10 -left-10 w-32 h-32 bg-orange-600/20 rounded-full blur-3xl pointer-events-none"></div>
+
             <button 
               onClick={() => setShowUserModal(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+              className="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
             
-            <div className="mb-6 text-left">
-              <h2 className="text-xl font-bold text-white mb-2">Welcome!</h2>
-              <p className="text-sm text-gray-400">Please enter your details to find your photos.</p>
+            <div className="mb-8">
+              <div className="w-12 h-12 bg-white text-black rounded-2xl flex items-center justify-center mb-4">
+                <Icons.User className="w-6 h-6" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">Welcome</h2>
+              <p className="text-sm text-gray-400">Tell us who you are to start searching.</p>
             </div>
 
             <form onSubmit={handleUserSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs text-gray-400 mb-1 ml-1">Full Name</label>
-                <input
-                  type="text"
-                  value={userName}
-                  onChange={(e) => setUserName(e.target.value)}
-                  className="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                  placeholder="John Doe"
-                  autoFocus
-                />
-              </div>
-              
-              <div>
-                <label className="block text-xs text-gray-400 mb-1 ml-1">Email Address</label>
-                <input
-                  type="email"
-                  value={userEmail}
-                  onChange={(e) => setUserEmail(e.target.value)}
-                  className="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                  placeholder="john@example.com"
-                />
+              <div className="space-y-4">
+                <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 ml-1">Full Name</label>
+                    <input
+                    type="text"
+                    value={userName}
+                    onChange={(e) => setUserName(e.target.value)}
+                    className="w-full bg-black/50 border border-gray-700 rounded-xl px-5 py-3 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all"
+                    placeholder="Enter your full name"
+                    autoFocus
+                    />
+                </div>
+                
+                <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 ml-1">Email Address</label>
+                    <input
+                    type="email"
+                    value={userEmail}
+                    onChange={(e) => setUserEmail(e.target.value)}
+                    className="w-full bg-black/50 border border-gray-700 rounded-xl px-5 py-3 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all"
+                    placeholder="Enter your email address"
+                    />
+                </div>
               </div>
 
               {userError && (
-                <p className="text-red-400 text-xs flex items-center gap-1">
-                  <Icons.Loader className="w-3 h-3" />
+                <p className="text-red-400 text-sm flex items-center gap-2 bg-red-900/20 p-2 rounded-lg">
+                  <Icons.Loader className="w-4 h-4" />
                   {userError}
                 </p>
               )}
               
               <button
                 type="submit"
-                className="w-full bg-white text-black hover:bg-gray-200 font-semibold py-3 rounded-lg transition-colors shadow-lg"
+                className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 text-black hover:from-orange-400 hover:to-yellow-400 font-bold py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(234,88,12,0.2)] mt-4"
               >
-                Continue to Camera
+                Let's Go
               </button>
             </form>
           </div>

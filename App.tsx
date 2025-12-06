@@ -93,22 +93,28 @@ const App: React.FC = () => {
   // --- Render Logic ---
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col font-sans selection:bg-indigo-500/30">
+    <div className="min-h-screen bg-[#020101] text-zinc-100 flex flex-col font-sans selection:bg-orange-500/30">
+      {/* Global Gradient Background */}
+      <div className="fixed inset-0 z-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-red-950/20 via-black to-black pointer-events-none"></div>
+
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#09090b]/80 backdrop-blur supports-[backdrop-filter]:bg-[#09090b]/60">
+      <header className="sticky top-0 z-50 w-full border-b border-red-900/10 bg-[#050202]/80 backdrop-blur supports-[backdrop-filter]:bg-[#050202]/60">
         <div className="flex h-16 items-center px-4 md:px-8 max-w-7xl mx-auto justify-between">
           <div 
-            className="flex items-center gap-2 font-bold text-xl tracking-tighter cursor-pointer hover:opacity-80 transition-opacity"
+            className="flex items-center gap-3 font-bold text-xl tracking-tighter cursor-pointer hover:opacity-80 transition-opacity"
             onClick={handleBackToHome}
           >
-            <div className="bg-indigo-600 p-1.5 rounded-lg">
-              <Icons.Aperture className="w-5 h-5 text-white" />
+            {/* New Lens Logo in Header */}
+            <div className="w-8 h-8">
+              <Icons.Lens className="w-full h-full" />
             </div>
-            <span>PHOTOGRACHAR</span>
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-500 via-orange-400 to-yellow-400">
+              PHOTOGRACHAR
+            </span>
           </div>
           
           {role !== UserRole.NONE && (
-            <div className="text-xs font-medium px-3 py-1 bg-white/5 rounded-full border border-white/10">
+            <div className="text-xs font-medium px-3 py-1 bg-red-950/30 text-red-200 rounded-full border border-red-900/30">
               {role === UserRole.PHOTOGRAPHER ? 'Photographer Mode' : 'Guest Mode'}
             </div>
           )}
@@ -116,7 +122,7 @@ const App: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col">
+      <main className="relative z-10 flex-1 flex flex-col">
         {appState === AppState.LANDING && (
           <Hero onSelectRole={handleRoleSelect} />
         )}
@@ -149,13 +155,13 @@ const App: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 py-8 mt-auto">
+      <footer className="relative z-10 border-t border-red-900/10 py-8 mt-auto bg-black/40 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-          <p>© 2024 PHOTOGRACHAR. Powered by gushu_bhat.</p>
+          <p>© 2025 PHOTOGRACHAR. Powered by gushu_bhat.</p>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-gray-300 transition-colors">Privacy</a>
-            <a href="#" className="hover:text-gray-300 transition-colors">Terms</a>
-            <a href="#" className="hover:text-gray-300 transition-colors">Support</a>
+            <a href="#" className="hover:text-orange-400 transition-colors">Privacy</a>
+            <a href="#" className="hover:text-orange-400 transition-colors">Terms</a>
+            <a href="#" className="hover:text-orange-400 transition-colors">Support</a>
           </div>
         </div>
       </footer>
