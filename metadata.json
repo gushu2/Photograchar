@@ -1,0 +1,7 @@
+{
+  "name": "PHOTOGRACHAR",
+  "description": "A smart photo discovery platform using Gemini AI to match users with photos taken by event photographers.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
