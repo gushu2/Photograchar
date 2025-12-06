@@ -3,26 +3,24 @@ import { GalleryPhoto } from '../types';
 import { compareFaces } from '../services/geminiService';
 import { Icons } from '../constants';
 import { jsPDF } from 'jspdf';
+import * as storage from '../services/storageService';
 
 interface ScanningResultsProps {
   userSelfie: string;
-  gallery: GalleryPhoto[];
+  totalPhotos: number;
   onBack: () => void;
 }
 
-const ScanningResults: React.FC<ScanningResultsProps> = ({ userSelfie, gallery, onBack }) => {
+const ScanningResults: React.FC<ScanningResultsProps> = ({ userSelfie, totalPhotos, onBack }) => {
   const [matches, setMatches] = useState<GalleryPhoto[]>([]);
   const [isScanning, setIsScanning] = useState(true);
   const [progress, setProgress] = useState(0);
   const [scannedCount, setScannedCount] = useState(0);
   
-  // State to track which photo has the download menu open
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   
-  // Ref to track if component is mounted to avoid state updates after unmount
   const isMounted = useRef(true);
 
-  // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
@@ -43,34 +41,41 @@ const ScanningResults: React.FC<ScanningResultsProps> = ({ userSelfie, gallery, 
       setMatches([]);
       setScannedCount(0);
 
-      const total = gallery.length;
+      try {
+        // Fetch all IDs first. This is lightweight compared to fetching images.
+        const allIds = await storage.getAllPhotoIds();
+        const total = allIds.length;
 
-      if (total === 0) {
-        if (isMounted.current) setIsScanning(false);
-        return;
-      }
-
-      // Process in batches/sequence
-      for (let i = 0; i < total; i++) {
-        // Stop processing if user navigated away
-        if (!isMounted.current) break;
-
-        const photo = gallery[i];
-        try {
-          // Compare selfie with current photo
-          const result = await compareFaces(userSelfie, photo.url);
-          
-          if (isMounted.current) {
-            if (result.match) {
-              // Update matches immediately for better UX
-              setMatches(prev => [...prev, photo]);
-            }
-            setScannedCount(prev => prev + 1);
-            setProgress(((i + 1) / total) * 100);
-          }
-        } catch (e) {
-          console.error("Failed to scan photo", e);
+        if (total === 0) {
+          if (isMounted.current) setIsScanning(false);
+          return;
         }
+
+        // Process sequentially to keep memory usage low
+        for (let i = 0; i < total; i++) {
+          if (!isMounted.current) break;
+
+          const id = allIds[i];
+          const photo = await storage.getPhotoById(id);
+
+          if (photo) {
+             try {
+              const result = await compareFaces(userSelfie, photo.url);
+              
+              if (isMounted.current) {
+                if (result.match) {
+                  setMatches(prev => [...prev, photo]);
+                }
+                setScannedCount(prev => prev + 1);
+                setProgress(((i + 1) / total) * 100);
+              }
+            } catch (e) {
+              console.error("Failed to scan photo", e);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error initializing scan", err);
       }
 
       if (isMounted.current) {
@@ -84,7 +89,7 @@ const ScanningResults: React.FC<ScanningResultsProps> = ({ userSelfie, gallery, 
     return () => {
       isMounted.current = false;
     };
-  }, [userSelfie, gallery]);
+  }, [userSelfie]);
 
   // --- Download Logic ---
 
@@ -99,7 +104,6 @@ const ScanningResults: React.FC<ScanningResultsProps> = ({ userSelfie, gallery, 
   };
 
   const handleDownloadOriginal = (photo: GalleryPhoto) => {
-    // Detect mime type to give correct extension
     const mime = photo.url.match(/data:image\/(\w+);/)?.[1] || 'jpg';
     downloadFile(photo.url, `photo-${photo.id}.${mime}`);
   };
@@ -114,7 +118,6 @@ const ScanningResults: React.FC<ScanningResultsProps> = ({ userSelfie, gallery, 
       const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.drawImage(img, 0, 0);
-        // Use 1.0 quality (max)
         const newUrl = canvas.toDataURL(`image/${format}`, 1.0);
         const ext = format === 'jpeg' ? 'jpg' : 'png';
         downloadFile(newUrl, `photo-${photo.id}.${ext}`);
@@ -174,7 +177,7 @@ const ScanningResults: React.FC<ScanningResultsProps> = ({ userSelfie, gallery, 
                     
                     <div className="flex justify-between items-center text-sm border-t border-gray-800 pt-4">
                         <span className="text-gray-400">Scanned</span>
-                        <span className="font-mono">{scannedCount} / {gallery.length}</span>
+                        <span className="font-mono">{scannedCount} / {totalPhotos}</span>
                     </div>
                      <div className="flex justify-between items-center text-sm">
                         <span className="text-gray-400">Found</span>
@@ -190,6 +193,7 @@ const ScanningResults: React.FC<ScanningResultsProps> = ({ userSelfie, gallery, 
                 <div className="flex flex-col items-center justify-center h-64 text-center space-y-4">
                     <Icons.Loader className="w-10 h-10 text-indigo-500 animate-spin" />
                     <p className="text-gray-400">Analyzing faces in the gallery...</p>
+                    <p className="text-xs text-gray-500">Scanning locally stored photos. Do not close this tab.</p>
                 </div>
             ) : matches.length === 0 && !isScanning ? (
                 <div className="flex flex-col items-center justify-center h-64 text-center space-y-4 bg-gray-900/30 rounded-2xl border border-gray-800 border-dashed">

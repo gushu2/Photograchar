@@ -5,25 +5,29 @@ import PhotographerDashboard from './components/PhotographerDashboard';
 import ScanningResults from './components/ScanningResults';
 import { AppState, GalleryPhoto, UserRole } from './types';
 import { Icons } from './constants';
+import * as storage from './services/storageService';
 
 const App: React.FC = () => {
   const [appState, setAppState] = useState<AppState>(AppState.LANDING);
   const [role, setRole] = useState<UserRole>(UserRole.NONE);
-  const [gallery, setGallery] = useState<GalleryPhoto[]>([]);
+  // We only keep a subset in state for display to avoid crashing memory
+  const [recentGallery, setRecentGallery] = useState<GalleryPhoto[]>([]);
+  const [totalPhotos, setTotalPhotos] = useState<number>(0);
   const [userSelfie, setUserSelfie] = useState<string | null>(null);
 
-  // Pre-load some dummy images into gallery if empty for demo purposes
+  // Initialize DB and load initial stats
   useEffect(() => {
-    // In a real app, this would fetch from a backend. 
-    // Here we initialize empty or could load from localStorage.
-    const saved = localStorage.getItem('photograchar_gallery');
-    if (saved) {
+    const init = async () => {
       try {
-        setGallery(JSON.parse(saved));
+        const count = await storage.getPhotoCount();
+        setTotalPhotos(count);
+        const recent = await storage.getRecentPhotos(24);
+        setRecentGallery(recent);
       } catch (e) {
-        console.error("Failed to parse gallery from localStorage", e);
+        console.error("Failed to initialize storage", e);
       }
-    }
+    };
+    init();
   }, []);
 
   const handleRoleSelect = (selectedRole: UserRole) => {
@@ -60,18 +64,18 @@ const App: React.FC = () => {
     try {
       const newPhotos = await Promise.all(filePromises);
       
-      setGallery(prev => {
-        const updated = [...newPhotos, ...prev];
-        // Side effect: Save to local storage
-        try {
-          localStorage.setItem('photograchar_gallery', JSON.stringify(updated));
-        } catch (e) {
-          console.error("Failed to save to localStorage", e);
-        }
-        return updated;
-      });
+      // Save to IndexedDB
+      await storage.savePhotos(newPhotos);
+      
+      // Update local state (stats and recent preview)
+      const count = await storage.getPhotoCount();
+      setTotalPhotos(count);
+      const recent = await storage.getRecentPhotos(24);
+      setRecentGallery(recent);
+      
     } catch (error) {
-      console.error("Error reading files:", error);
+      console.error("Error processing/saving files:", error);
+      alert("Error saving photos. Ensure you have enough disk space.");
     }
   };
 
@@ -119,7 +123,8 @@ const App: React.FC = () => {
 
         {appState === AppState.PHOTOGRAPHER_DASHBOARD && (
           <PhotographerDashboard 
-            gallery={gallery} 
+            recentGallery={recentGallery} 
+            totalPhotos={totalPhotos}
             onUpload={handlePhotographerUpload} 
             onBack={handleBackToHome}
           />
@@ -137,7 +142,7 @@ const App: React.FC = () => {
         {appState === AppState.USER_RESULTS && userSelfie && (
           <ScanningResults 
             userSelfie={userSelfie} 
-            gallery={gallery}
+            totalPhotos={totalPhotos}
             onBack={() => setAppState(AppState.USER_CAMERA)}
           />
         )}
@@ -146,7 +151,7 @@ const App: React.FC = () => {
       {/* Footer */}
       <footer className="border-t border-white/10 py-8 mt-auto">
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-          <p>© 2024 PHOTOGRACHAR. Powered by Gemini AI.</p>
+          <p>© 2024 PHOTOGRACHAR. Powered by gushu_bhat.</p>
           <div className="flex gap-6">
             <a href="#" className="hover:text-gray-300 transition-colors">Privacy</a>
             <a href="#" className="hover:text-gray-300 transition-colors">Terms</a>
