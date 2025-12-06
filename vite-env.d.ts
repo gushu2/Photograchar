@@ -1,4 +1,16 @@
-// This file handles environment type definitions.
-// References to vite/client and process declarations have been removed to fix build errors.
+// Manual type definitions to replace missing vite/client types and fix build error
 
-export {};
+declare var process: {
+  env: {
+    NODE_ENV: string;
+    [key: string]: string | undefined;
+  };
+};
+
+interface ImportMetaEnv {
+  [key: string]: any;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
