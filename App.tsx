@@ -46,8 +46,9 @@ const App: React.FC = () => {
         const reader = new FileReader();
         reader.onloadend = () => {
           // Fallback for randomUUID in case context is not secure
-          const id = (typeof crypto !== 'undefined' && crypto.randomUUID) 
-            ? crypto.randomUUID() 
+          // Cast crypto to any to avoid TS errors on older libs
+          const id = (typeof crypto !== 'undefined' && (crypto as any).randomUUID) 
+            ? (crypto as any).randomUUID() 
             : Math.random().toString(36).substring(2) + Date.now().toString(36);
             
           resolve({
