@@ -1,12 +1,10 @@
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, (process as any).cwd(), '');
+  // Standard Vite configuration without API Key injection
   return {
     plugins: [react()],
-    define: {
-      'process.env.API_KEY': JSON.stringify(env.API_KEY)
-    }
+    // No "define" block needed as we are not using process.env for API keys
   };
 });
