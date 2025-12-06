@@ -50,6 +50,16 @@ export const Icons = {
       React.createElement("line", { x1: "16.62", y1: "12", x2: "10.88", y2: "21.94" })
     )
   ),
+  Lens: (props: React.SVGProps<SVGSVGElement>) => (
+    React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", ...props },
+      React.createElement("circle", { cx: "12", cy: "12", r: "10" }),
+      React.createElement("circle", { cx: "12", cy: "12", r: "4" }),
+      React.createElement("path", { d: "M21.17 8H2.83" }),
+      React.createElement("path", { d: "M21.17 16H2.83" }),
+      React.createElement("path", { d: "M8 21.17V2.83" }),
+      React.createElement("path", { d: "M16 21.17V2.83" })
+    )
+  ),
   Loader: (props: React.SVGProps<SVGSVGElement>) => (
     React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", ...props },
       React.createElement("path", { d: "M21 12a9 9 0 1 1-6.219-8.56" })

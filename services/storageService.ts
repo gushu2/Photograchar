@@ -1,8 +1,9 @@
-import { GalleryPhoto } from '../types';
+import { GalleryPhoto, SearcherProfile } from '../types';
 
 const DB_NAME = 'PhotogracharDB';
-const STORE_NAME = 'photos';
-const DB_VERSION = 1;
+const STORE_PHOTOS = 'photos';
+const STORE_SEARCHERS = 'searchers';
+const DB_VERSION = 2; // Incremented for new store
 
 let dbPromise: Promise<IDBDatabase> | null = null;
 
@@ -13,8 +14,16 @@ const getDB = (): Promise<IDBDatabase> => {
 
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
-        if (!db.objectStoreNames.contains(STORE_NAME)) {
-          const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+        
+        // Create Photos Store
+        if (!db.objectStoreNames.contains(STORE_PHOTOS)) {
+          const store = db.createObjectStore(STORE_PHOTOS, { keyPath: 'id' });
+          store.createIndex('timestamp', 'timestamp', { unique: false });
+        }
+
+        // Create Searchers Store (New in v2)
+        if (!db.objectStoreNames.contains(STORE_SEARCHERS)) {
+          const store = db.createObjectStore(STORE_SEARCHERS, { keyPath: 'id' });
           store.createIndex('timestamp', 'timestamp', { unique: false });
         }
       };
@@ -31,11 +40,13 @@ const getDB = (): Promise<IDBDatabase> => {
   return dbPromise;
 };
 
+// --- Photo Operations ---
+
 export const savePhotos = async (photos: GalleryPhoto[]): Promise<void> => {
   const db = await getDB();
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORE_NAME, 'readwrite');
-    const store = transaction.objectStore(STORE_NAME);
+    const transaction = db.transaction(STORE_PHOTOS, 'readwrite');
+    const store = transaction.objectStore(STORE_PHOTOS);
 
     photos.forEach(photo => {
       store.put(photo);
@@ -49,8 +60,8 @@ export const savePhotos = async (photos: GalleryPhoto[]): Promise<void> => {
 export const getRecentPhotos = async (limit: number = 20): Promise<GalleryPhoto[]> => {
   const db = await getDB();
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORE_NAME, 'readonly');
-    const store = transaction.objectStore(STORE_NAME);
+    const transaction = db.transaction(STORE_PHOTOS, 'readonly');
+    const store = transaction.objectStore(STORE_PHOTOS);
     const index = store.index('timestamp');
     const request = index.openCursor(null, 'prev');
     
@@ -73,8 +84,8 @@ export const getRecentPhotos = async (limit: number = 20): Promise<GalleryPhoto[
 export const getPhotoCount = async (): Promise<number> => {
   const db = await getDB();
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORE_NAME, 'readonly');
-    const store = transaction.objectStore(STORE_NAME);
+    const transaction = db.transaction(STORE_PHOTOS, 'readonly');
+    const store = transaction.objectStore(STORE_PHOTOS);
     const request = store.count();
 
     request.onsuccess = () => resolve(request.result);
@@ -87,8 +98,8 @@ export const iteratePhotos = async (
 ): Promise<void> => {
   const db = await getDB();
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORE_NAME, 'readonly');
-    const store = transaction.objectStore(STORE_NAME);
+    const transaction = db.transaction(STORE_PHOTOS, 'readonly');
+    const store = transaction.objectStore(STORE_PHOTOS);
     const request = store.openCursor();
     
     let index = 0;
@@ -96,14 +107,6 @@ export const iteratePhotos = async (
     request.onsuccess = async (event) => {
       const cursor = (event.target as IDBRequest).result;
       if (cursor) {
-        // We pause the cursor iteration to wait for the callback (AI processing)
-        // Note: IDB transactions auto-commit if the event loop is empty. 
-        // For long async AI calls, this might be tricky in one transaction.
-        // However, for read-only streaming, we often just read the value.
-        // To strictly handle async callbacks safely with IDB, we grab the value, 
-        // let the cursor hang or use separate transactions per item if strictly needed,
-        // but passing the value out is usually fine.
-        
         const photo = cursor.value;
         const shouldContinue = await callback(photo, index);
         
@@ -122,13 +125,11 @@ export const iteratePhotos = async (
   });
 };
 
-// Alternate strategy for long processing: Get all IDs then fetch individually
-// This prevents transaction timeouts during long API calls
 export const getAllPhotoIds = async (): Promise<string[]> => {
     const db = await getDB();
     return new Promise((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, 'readonly');
-        const store = transaction.objectStore(STORE_NAME);
+        const transaction = db.transaction(STORE_PHOTOS, 'readonly');
+        const store = transaction.objectStore(STORE_PHOTOS);
         const request = store.getAllKeys();
         request.onsuccess = () => resolve(request.result as string[]);
         request.onerror = () => reject(request.error);
@@ -138,8 +139,8 @@ export const getAllPhotoIds = async (): Promise<string[]> => {
 export const getPhotoById = async (id: string): Promise<GalleryPhoto | undefined> => {
     const db = await getDB();
     return new Promise((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, 'readonly');
-        const store = transaction.objectStore(STORE_NAME);
+        const transaction = db.transaction(STORE_PHOTOS, 'readonly');
+        const store = transaction.objectStore(STORE_PHOTOS);
         const request = store.get(id);
         request.onsuccess = () => resolve(request.result);
         request.onerror = () => reject(request.error);
@@ -149,10 +150,54 @@ export const getPhotoById = async (id: string): Promise<GalleryPhoto | undefined
 export const clearGallery = async (): Promise<void> => {
   const db = await getDB();
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORE_NAME, 'readwrite');
-    const store = transaction.objectStore(STORE_NAME);
+    const transaction = db.transaction(STORE_PHOTOS, 'readwrite');
+    const store = transaction.objectStore(STORE_PHOTOS);
     const request = store.clear();
     request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+};
+
+// --- Searcher (User Log) Operations ---
+
+export const saveSearcher = async (name: string, email: string): Promise<void> => {
+  const db = await getDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORE_SEARCHERS, 'readwrite');
+    const store = transaction.objectStore(STORE_SEARCHERS);
+    
+    const profile: SearcherProfile = {
+      id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
+      name,
+      email,
+      timestamp: Date.now()
+    };
+
+    const request = store.put(profile);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+};
+
+export const getSearchers = async (): Promise<SearcherProfile[]> => {
+  const db = await getDB();
+  return new Promise((resolve, reject) => {
+    // Check if store exists (in case older DB version hasn't updated in memory)
+    if (!db.objectStoreNames.contains(STORE_SEARCHERS)) {
+      resolve([]);
+      return;
+    }
+
+    const transaction = db.transaction(STORE_SEARCHERS, 'readonly');
+    const store = transaction.objectStore(STORE_SEARCHERS);
+    const index = store.index('timestamp');
+    const request = index.getAll(); // Get all records
+
+    request.onsuccess = () => {
+      // Return sorted by newest first
+      const results = (request.result as SearcherProfile[]).sort((a, b) => b.timestamp - a.timestamp);
+      resolve(results);
+    };
     request.onerror = () => reject(request.error);
   });
 };

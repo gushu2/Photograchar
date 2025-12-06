@@ -11,6 +11,13 @@ export interface MatchResult {
   match: boolean;
 }
 
+export interface SearcherProfile {
+  id: string;
+  name: string;
+  email: string;
+  timestamp: number;
+}
+
 export enum UserRole {
   NONE = 'NONE',
   PHOTOGRAPHER = 'PHOTOGRAPHER',
