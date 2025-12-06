@@ -166,8 +166,13 @@ export const saveSearcher = async (name: string, email: string): Promise<void> =
     const transaction = db.transaction(STORE_SEARCHERS, 'readwrite');
     const store = transaction.objectStore(STORE_SEARCHERS);
     
+    // Safer ID generation
+    const id = (typeof crypto !== 'undefined' && crypto.randomUUID) 
+      ? crypto.randomUUID() 
+      : Date.now().toString() + Math.random().toString(36).substring(2);
+
     const profile: SearcherProfile = {
-      id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
+      id,
       name,
       email,
       timestamp: Date.now()

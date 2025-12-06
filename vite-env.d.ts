@@ -1,9 +1,8 @@
-// Augment the NodeJS namespace to include the API_KEY property on ProcessEnv.
-// This avoids redeclaring the global 'process' variable which causes TypeScript errors.
-
-declare namespace NodeJS {
-  interface ProcessEnv {
+// Removed reference to 'vite/client' to fix missing type definition error
+// Used 'declare var' for process to avoid "Cannot redeclare block-scoped variable" error if already defined in environment
+declare var process: {
+  env: {
     API_KEY: string;
     [key: string]: string | undefined;
-  }
-}
+  };
+};
