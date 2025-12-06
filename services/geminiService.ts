@@ -1,7 +1,6 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 
-const apiKey = process.env.API_KEY || '';
-const ai = new GoogleGenAI({ apiKey });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 /**
  * Helper to extract MIME type from Data URL
@@ -19,7 +18,7 @@ const getMimeType = (dataUrl: string): string => {
  * Compares a user's selfie with a candidate image to check for a facial match.
  */
 export const compareFaces = async (selfieBase64: string, candidateBase64: string): Promise<{ match: boolean; confidence: number }> => {
-  if (!apiKey) {
+  if (!process.env.API_KEY) {
     console.error("API Key is missing");
     return { match: false, confidence: 0 };
   }
